@@ -1,0 +1,60 @@
+{
+  "services": {
+    "myservice": {
+      "discovery": {
+        "method": "ec2tag",
+        "tag_name": "servicename",
+        "tag_value": "true",
+        "check_interval": 120.0
+      },
+      "haproxy": {
+        "port": 50003,
+        "listen": [
+          "mode http"
+        ],
+        "server_port_override": "50001",
+        "server_backup_port": "50002",
+        "server_options": "check"
+      }
+    }
+  },
+  "haproxy": {
+    "reload_command": "echo noop",
+    "config_file_path": "/etc/haproxy/haproxy.cfg",
+    "socket_file_path": "/var/haproxy/stats.sock",
+    "do_writes": true,
+    "do_reloads": true,
+    "do_socket": false,
+    "bind_address": "0.0.0.0",
+    "global": [
+      "daemon",
+      "user    haproxy",
+      "group   haproxy",
+      "chroot  /var/lib/haproxy",
+      "maxconn 4096",
+      "log     127.0.0.1 local0",
+      "log     127.0.0.1 local1 notice"
+    ],
+    "defaults": [
+      "log            global",
+      "mode           http",
+      "maxconn        2000",
+      "retries        3",
+      "timeout        connect 5s",
+      "timeout        client  1m",
+      "timeout        server  1m",
+      "option         redispatch",
+      "balance        roundrobin",
+      "default-server inter 2s rise 3 fall 2",
+      "option         dontlognull",
+      "option         dontlog-normal"
+    ],
+    "extra_sections": {
+      "listen stats :1937": [
+        "stats enable",
+        "stats uri /",
+        "stats realm Haproxy Statistics"
+      ]
+    }
+  }
+}
